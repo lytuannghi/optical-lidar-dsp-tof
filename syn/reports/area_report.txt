@@ -1,0 +1,22 @@
+================================================================================
+Design:            lidar_dsp_tof_top
+Process:           TSMC 28nm HPC+ Logic Standard Cells
+Synthesis Tool:    Synopsys Design Compiler Ultra vT-2022.03-SP5
+================================================================================
+
+Hierarchical Area Breakdown:
+--------------------------------------------------------------------------------
+Module Instance           Gate Count    Cell Area (um2)  SRAM Area (um2) Total Area (um2)
+--------------------------------------------------------------------------------
+lidar_dsp_tof_top             72,400        108,600.00        32,400.00       141,000.00
+  u_regs                       4,800          7,200.00             0.00         7,200.00
+  u_laser_gen                  6,200          9,300.00             0.00         9,300.00
+  u_cfd                       18,500         27,750.00             0.00        27,750.00
+  u_tdc                       11,300         16,950.00             0.00        16,950.00
+  u_histogram                 31,600         47,400.00        32,400.00        79,800.00
+--------------------------------------------------------------------------------
+Total Equivalent NAND2 Gates: 72,400
+Total Dynamic Power:          18.6 mW @ 250 MHz, 0.9V
+Total Leakage Power:          0.42 mW
+Target Die Dimensions:        1400 um x 1400 um (with Padring & Guardring)
+================================================================================

@@ -1,35 +1,8 @@
 ================================================================================
-CALIBRE nmLVS REPORT
-Design:          lidar_dsp_tof_top
-Layout:          layout/gds/lidar_dsp_tof_top.gds (Cell: lidar_dsp_tof_top)
-Source Netlist:  syn/netlist/lidar_dsp_tof_top_syn.v
-Technology:      TSMC 28nm HPC+ Logic Library
-Calibre Version: v2022.4_38.22
-Execution Date:  Sun Nov 22 12:00:00 2026
+PHYSICAL GEOMETRY & TOP-LEVEL PORT AUDIT: lidar_dsp_tof_top
+Process Node: SkyWater 130nm (DB Unit: 1 nm)
+Layout File:  layout/gds/lidar_dsp_tof_top.gds
 ================================================================================
 
-OVERALL COMPARISON RESULTS:
-  # Netlist instances: 72,400
-  # Layout instances:  72,400
-  # Netlist nets:      74,850
-  # Layout nets:       74,850
-  # Unmatched ports:   0
-  # Unmatched nets:    0
-  # Unmatched devices: 0
-
-DETAILED SUBSYSTEM LVS EQUIVALENCE:
---------------------------------------------------------------------------------
-Sub-Block                     Layout Ports  Schematic Ports  Status
---------------------------------------------------------------------------------
-u_regs (lidar_regs_apb)                 78               78  100% MATCH
-u_laser_gen (laser_pulse_generator)     34               34  100% MATCH
-u_cfd (constant_fraction_discriminator) 42               42  100% MATCH
-u_tdc (time_to_digital_converter)       64               64  100% MATCH
-u_histogram (tof_histogram_engine)     112              112  100% MATCH
---------------------------------------------------------------------------------
-
-LVS VERIFICATION STATUS:
-  LVS COMPARISON: CLEAN
-  ERROR COUNT: 0
-  NETLIST AND LAYOUT MATCH 100% PERFECTLY.
-================================================================================
+GDSII Geometry Check (verify_gds_drc.py): 0 geometric DRC violations (verified polygons)
+Note: External Magic/Netgen required for transistor-level SPICE extraction & LVS.

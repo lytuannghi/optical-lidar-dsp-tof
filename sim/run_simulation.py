@@ -1,55 +1,58 @@
 #!/usr/bin/env python3
-"""
-Simulation Automation Script for Automotive Optical LiDAR Time-of-Flight (ToF) DSP ASIC
-Compiles synthesizable RTL and self-checking testbench using Icarus Verilog and executes VVP.
-"""
-
+"""Portable Icarus Verilog Simulation Runner (-Wall -g2005)."""
+import glob
+import os
+import shutil
 import subprocess
 import sys
-import os
 
-def run():
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    sim_dir = os.path.join(repo_root, "sim")
-    waves_dir = os.path.join(sim_dir, "waves")
-    os.makedirs(waves_dir, exist_ok=True)
 
-    rtl_files = [
-        os.path.join(repo_root, "rtl", "laser_ctrl", "laser_pulse_generator.v"),
-        os.path.join(repo_root, "rtl", "cfd", "constant_fraction_discriminator.v"),
-        os.path.join(repo_root, "rtl", "tdc", "time_to_digital_converter.v"),
-        os.path.join(repo_root, "rtl", "histogram", "tof_histogram_engine.v"),
-        os.path.join(repo_root, "rtl", "bus", "lidar_regs_apb.v"),
-        os.path.join(repo_root, "rtl", "lidar_dsp_tof_top.v"),
-    ]
+def find_tool(name):
+    found = shutil.which(name)
+    if found:
+        return found
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(here)
+    candidate = os.path.normpath(os.path.join(root, "..", "iverilog", "bin", f"{name}.exe"))
+    if os.path.isfile(candidate):
+        return candidate
+    raise FileNotFoundError(f"Could not locate {name} in PATH or sibling iverilog/bin")
 
-    tb_file = os.path.join(repo_root, "tb", "tb_lidar_dsp_tof.v")
-    out_vvp = os.path.join(sim_dir, "lidar_sim.vvp")
 
-    print("[INFO] Compiling Automotive Optical LiDAR ToF DSP ASIC RTL and Testbench...")
-    cmd_compile = ["iverilog", "-g2012", "-o", out_vvp, "-I", os.path.join(repo_root, "rtl")] + rtl_files + [tb_file]
-    res_compile = subprocess.run(cmd_compile, capture_output=True, text=True)
+def main():
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(here)
+    os.chdir(root)
+    os.makedirs("sim/waves", exist_ok=True)
 
-    if res_compile.returncode != 0:
-        print("[ERROR] Compilation failed:")
-        print(res_compile.stderr)
-        sys.exit(1)
-    print("[INFO] Compilation successful!")
+    rtl_files = sorted(glob.glob(os.path.join("rtl", "**", "*.v"), recursive=True))
+    tb_files = sorted(glob.glob(os.path.join("tb", "**", "*.v"), recursive=True))
+    sources = rtl_files + tb_files
 
-    print("[INFO] Running VVP simulation...")
-    cmd_run = ["vvp", out_vvp]
-    res_run = subprocess.run(cmd_run, cwd=repo_root, capture_output=True, text=True)
+    iverilog = find_tool("iverilog")
+    vvp = find_tool("vvp")
+    vvp_out = "sim/lidar_sim.vvp"
 
-    print(res_run.stdout)
-    if res_run.stderr:
-        print("[STDERR]:", res_run.stderr)
+    cmd = [iverilog, "-Wall", "-g2005", "-s", "tb_lidar_dsp_tof", "-o", vvp_out] + sources
+    comp = subprocess.run(cmd, capture_output=True, text=True)
+    if comp.stdout:
+        print(comp.stdout, end="")
+    if comp.stderr:
+        print(comp.stderr, end="", file=sys.stderr)
+    if comp.returncode != 0 or comp.stderr.strip():
+        print("[ERROR] Compilation failed or emitted warnings under -Wall.")
+        return 1
 
-    if "ALL 10 VERIFICATION TESTS COMPLETED WITH 100% PASS RATE" in res_run.stdout:
-        print("[SUCCESS] All 10 Optical LiDAR ToF test cases PASSED!")
-        sys.exit(0)
-    else:
-        print("[FAILURE] Simulation failed assertion checks.")
-        sys.exit(1)
+    sim = subprocess.run([vvp, vvp_out], capture_output=True, text=True)
+    print(sim.stdout, end="")
+    if sim.stderr:
+        print(sim.stderr, end="", file=sys.stderr)
+    if sim.returncode != 0:
+        return sim.returncode
+    if "[FAIL]" in sim.stdout or ("FAILURES" in sim.stdout and "0 FAILURES" not in sim.stdout):
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    run()
+    sys.exit(main())

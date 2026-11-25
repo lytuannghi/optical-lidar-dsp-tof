@@ -1,14 +1,14 @@
 # ==============================================================================
 # Design Compiler Synthesis Script
 # Design: lidar_dsp_tof_top
-# Target Library: TSMC 28nm HPC+ 0.9V Low-Power Logic Standard Cells
+# Target Library: SkyWater 130nm HD Standard Cell Library (1.80V, 25C)
 # ==============================================================================
 
 set DESIGN_NAME "lidar_dsp_tof_top"
 
 set_app_var search_path ". ./rtl ./rtl/laser_ctrl ./rtl/cfd ./rtl/tdc ./rtl/histogram ./rtl/bus /tools/synopsys/libs"
-set_app_var target_library "tcbn28hpcplus_ss0p9v125c.db"
-set_app_var link_library "* tcbn28hpcplus_ss0p9v125c.db tcbn28hpcplus_ff0p99v0c.db"
+set_app_var target_library "sky130_fd_sc_hd
+set_app_var link_library "* sky130_fd_sc_hd sky130_fd_sc_hd
 
 # Analyze Verilog RTL Sources
 analyze -format verilog {

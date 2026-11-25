@@ -1,0 +1,24 @@
+================================================================================
+RTL SYNTHESIS READINESS & CONSTRAINT REPORT: optical-lidar-dsp-tof
+Method : Static Verilog/SV Structural Parser + SDC Constraint Audit
+Note   : Foundry Gate-Level Netlist & STA require PDK Liberty (.lib) + Synopsys/OpenROAD
+================================================================================
+RTL Source Files Inspected : 6
+Code Lines (Non-Comment)   : 462
+Sequential Blocks          : 5
+Combinational Blocks       : 1
+Declared reg/logic Signals : 40
+
+MODULE BREAKDOWN:
+  rtl\bus\lidar_regs_apb.v                      | modules=lidar_regs_apb               | loc=  82 | seq= 1 | comb= 0
+  rtl\cfd\constant_fraction_discriminator.v     | modules=constant_fraction_discriminator | loc=  64 | seq= 1 | comb= 1
+  rtl\histogram\tof_histogram_engine.v          | modules=tof_histogram_engine         | loc=  94 | seq= 1 | comb= 0
+  rtl\laser_ctrl\laser_pulse_generator.v        | modules=laser_pulse_generator        | loc=  60 | seq= 1 | comb= 0
+  rtl\lidar_dsp_tof_top.v                       | modules=lidar_dsp_tof_top            | loc= 120 | seq= 0 | comb= 0
+  rtl\tdc\time_to_digital_converter.v           | modules=time_to_digital_converter    | loc=  42 | seq= 1 | comb= 0
+
+SDC CLOCK CONSTRAINTS:
+  lidar_timing.sdc: port=clk | period=4.00 ns | target=250.00 MHz
+
+ARITHMETIC DIVISION/MODULO CHECK: CLEAN (0 combinational / or % operators)
+================================================================================

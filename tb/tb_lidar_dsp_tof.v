@@ -336,37 +336,58 @@ module tb_lidar_dsp_tof;
         end
 
         repeat(20) @(posedge clk);
-        if (u_dut.u_histogram.hist_mem[56] >= 16'd1 || u_dut.u_histogram.hist_mem[57] >= 16'd1 || u_dut.u_histogram.hist_mem[58] >= 16'd1 || u_dut.u_histogram.hist_mem[50] >= 16'd1) begin
+        if (u_dut.u_histogram.hist_mem[57] == 16'd6) begin
             $display("[PASS] Test 8: 1024-Bin Histogram accumulated photon events successfully (Target Bin count = %0d).", u_dut.u_histogram.hist_mem[57]);
             tests_passed = tests_passed + 1;
         end else begin
-            $display("[FAIL] Test 8: Histogram accumulation failed.");
+            $display("[FAIL] Test 8: Histogram accumulation failed (bin57=%0d).", u_dut.u_histogram.hist_mem[57]);
             tests_failed = tests_failed + 1;
         end
 
         // -------------------------------------------------------------
         // Test 9: Multi-Peak Target Extraction (Primary & Secondary Echoes)
         // -------------------------------------------------------------
-        // Manually seed primary target (vehicle at bin 50) and secondary target (windshield at bin 10)
-        u_dut.u_histogram.hist_mem[10] = 16'd25;  // Windshield (6 meters)
-        u_dut.u_histogram.hist_mem[50] = 16'd120; // Vehicle obstacle (30 meters)
+        // Clear histogram and accumulate genuine optical echoes through CFD -> TDC -> Histogram:
+        // Primary target at bin 50 (4 echoes, 30000 mm) and secondary target at bin 10 (2 echoes, 6000 mm)
+        apb_write(8'h08, {8'd2, 16'd200}); // Faster 200-cycle PRF, 2-cycle safe pulse width
+        apb_write(8'h00, 32'h00000005);    // Clear histogram, keep laser enabled
+        @(posedge clk); #0.2;
+
+        begin: multi_peak_sim_loop
+            integer mp;
+            for (mp = 0; mp < 4; mp = mp + 1) begin
+                @(posedge laser_trigger);
+                repeat(43) @(posedge clk); // 43 + 7 cycle CFD zero-cross delay -> Bin 50 (30000 mm)
+                vernier_phase = 6'd0;
+                inject_optical_echo(12'd1500);
+            end
+            for (mp = 0; mp < 2; mp = mp + 1) begin
+                @(posedge laser_trigger);
+                repeat(3) @(posedge clk);  // 3 + 7 cycle CFD zero-cross delay -> Bin 10 (6000 mm)
+                vernier_phase = 6'd0;
+                inject_optical_echo(12'd1200);
+            end
+        end
+        repeat(20) @(posedge clk);
 
         // Trigger peak search via APB
         saw_peaks_done = 0;
-        apb_write(8'h00, 32'h00000008); // Find Peaks Start
+        apb_write(8'h00, 32'h00000009); // Find Peaks Start while keeping laser enabled
         wait_cycles = 0;
         while (!saw_peaks_done && wait_cycles < 2000) begin
             @(posedge clk);
             wait_cycles = wait_cycles + 1;
         end
 
-        if (u_dut.u_histogram.target1_bin == 10'd50 && u_dut.u_histogram.target2_bin == 10'd10) begin
+        if (u_dut.u_histogram.target1_bin == 10'd50 && u_dut.u_histogram.target2_bin == 10'd10 &&
+            u_dut.u_histogram.target1_count == 16'd4 && u_dut.u_histogram.target2_count == 16'd2) begin
             $display("[PASS] Test 9: Multi-Peak Engine separated Primary Obstacle (%0d mm) and Secondary Echo (%0d mm).",
                 u_dut.u_histogram.target1_range_mm, u_dut.u_histogram.target2_range_mm);
             tests_passed = tests_passed + 1;
         end else begin
-            $display("[FAIL] Test 9: Multi-Peak separation failed (T1=%d, T2=%d).",
-                u_dut.u_histogram.target1_bin, u_dut.u_histogram.target2_bin);
+            $display("[FAIL] Test 9: Multi-Peak separation failed (T1=%d cnt=%d, T2=%d cnt=%d).",
+                u_dut.u_histogram.target1_bin, u_dut.u_histogram.target1_count,
+                u_dut.u_histogram.target2_bin, u_dut.u_histogram.target2_count);
             tests_failed = tests_failed + 1;
         end
 
@@ -375,8 +396,14 @@ module tb_lidar_dsp_tof;
         // -------------------------------------------------------------
         apb_read(8'h10, read_val); // Read Target 1 Range
         if (read_val == 32'd30000) begin
-            $display("[PASS] Test 10: APB3 Telemetry Readback verified (Target 1 Range = %0d mm).", read_val);
-            tests_passed = tests_passed + 1;
+            apb_read(8'h18, read_val); // Read Target 2 Range
+            if (read_val == 32'd6000) begin
+                $display("[PASS] Test 10: APB3 Telemetry Readback verified (Target 1 = 30000 mm, Target 2 = 6000 mm).");
+                tests_passed = tests_passed + 1;
+            end else begin
+                $display("[FAIL] Test 10: Target 2 APB telemetry mismatch (%0d mm).", read_val);
+                tests_failed = tests_failed + 1;
+            end
         end else begin
             $display("[FAIL] Test 10: APB telemetry readback mismatch (%0d mm).", read_val);
             tests_failed = tests_failed + 1;

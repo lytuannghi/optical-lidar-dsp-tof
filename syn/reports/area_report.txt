@@ -1,22 +1,30 @@
 ================================================================================
-Design:            lidar_dsp_tof_top
-Process:           TSMC 28nm HPC+ Logic Standard Cells
-Synthesis Tool:    Synopsys Design Compiler Ultra vT-2022.03-SP5
+RTL STRUCTURAL & SYNTHESIS READINESS SUMMARY: lidar_dsp_tof_top
+Target Library Constraints: SkyWater 130nm HD Standard Cells (SDC)
 ================================================================================
 
-Hierarchical Area Breakdown:
---------------------------------------------------------------------------------
-Module Instance           Gate Count    Cell Area (um2)  SRAM Area (um2) Total Area (um2)
---------------------------------------------------------------------------------
-lidar_dsp_tof_top             72,400        108,600.00        32,400.00       141,000.00
-  u_regs                       4,800          7,200.00             0.00         7,200.00
-  u_laser_gen                  6,200          9,300.00             0.00         9,300.00
-  u_cfd                       18,500         27,750.00             0.00        27,750.00
-  u_tdc                       11,300         16,950.00             0.00        16,950.00
-  u_histogram                 31,600         47,400.00        32,400.00        79,800.00
---------------------------------------------------------------------------------
-Total Equivalent NAND2 Gates: 72,400
-Total Dynamic Power:          18.6 mW @ 250 MHz, 0.9V
-Total Leakage Power:          0.42 mW
-Target Die Dimensions:        1400 um x 1400 um (with Padring & Guardring)
 ================================================================================
+RTL SYNTHESIS READINESS & CONSTRAINT REPORT: optical-lidar-dsp-tof
+Method : Static Verilog/SV Structural Parser + SDC Constraint Audit
+Note   : Foundry Gate-Level Netlist & STA require PDK Liberty (.lib) + Synopsys/OpenROAD
+================================================================================
+RTL Source Files Inspected : 6
+Code Lines (Non-Comment)   : 462
+Sequential Blocks          : 5
+Combinational Blocks       : 1
+Declared reg/logic Signals : 40
+
+MODULE BREAKDOWN:
+  rtl\bus\lidar_regs_apb.v                      | modules=lidar_regs_apb               | loc=  82 | seq= 1 | comb= 0
+  rtl\cfd\constant_fraction_discriminator.v     | modules=constant_fraction_discriminator | loc=  64 | seq= 1 | comb= 1
+  rtl\histogram\tof_histogram_engine.v          | modules=tof_histogram_engine         | loc=  94 | seq= 1 | comb= 0
+  rtl\laser_ctrl\laser_pulse_generator.v        | modules=laser_pulse_generator        | loc=  60 | seq= 1 | comb= 0
+  rtl\lidar_dsp_tof_top.v                       | modules=lidar_dsp_tof_top            | loc= 120 | seq= 0 | comb= 0
+  rtl\tdc\time_to_digital_converter.v           | modules=time_to_digital_converter    | loc=  42 | seq= 1 | comb= 0
+
+SDC CLOCK CONSTRAINTS:
+  lidar_timing.sdc: port=clk | period=4.00 ns | target=250.00 MHz
+
+ARITHMETIC DIVISION/MODULO CHECK: CLEAN (0 combinational / or % operators)
+================================================================================
+

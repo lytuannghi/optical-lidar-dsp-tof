@@ -1,7 +1,7 @@
 # Automotive Optical LiDAR Time-of-Flight (ToF) DSP ASIC
 
 ## Overview
-This repository contains the complete synthesizable Verilog RTL, cycle-accurate verification suite, static timing analysis (STA) constraints, and SkyWater 130nm GDSII physical design collateral for an automotive-grade Direct Time-of-Flight (dToF) Optical LiDAR Digital Signal Processing (DSP) ASIC.
+This repository contains the complete synthesizable Verilog RTL, cycle-accurate verification suite, SDC timing constraints, and SkyWater 130nm GDSII physical design collateral for an automotive-grade Direct Time-of-Flight (dToF) Optical LiDAR Digital Signal Processing (DSP) ASIC.
 
 The architecture is targeted at long-range (up to 250 meters) automotive Advanced Driver Assistance Systems (ADAS) and Level 4/5 Autonomous Driving perception stacks. It incorporates a digital Constant Fraction Discriminator (dCFD) for amplitude-independent time-walk cancellation, a coarse-fine hybrid Time-to-Digital Converter (TDC) delivering 62.5 ps timing resolution (9.375 mm range granularity), an eye-safety laser watchdog interlock compliant with IEC 60825-1 Class 1 regulations, and a 1024-bin multi-echo statistical histogramming engine for robust primary and secondary target extraction in harsh weather (fog, rain, windshield reflection).
 
@@ -44,7 +44,7 @@ The architecture is targeted at long-range (up to 250 meters) automotive Advance
 
 | Metric / Parameter | Value | Description |
 | :--- | :--- | :--- |
-| Technology Node | SkyWater 130nm HPC+ | 1-Poly 9-Metal (1P9M) CMOS logic process |
+| Technology Node | SkyWater 130nm (`sky130_fd_sc_hd`) | 1-Poly 5-Metal (1P5M) GDSII Deck |
 | System Clock Frequency | 250.00 MHz | Period = 4.000 ns |
 | Measurement Architecture | Direct Time-of-Flight (dToF) | High-peak optical pulsed illumination |
 | Time-to-Digital Converter (TDC) | Coarse-Fine Hybrid (Vernier DLL) | 16-bit coarse (4 ns) + 6-bit fine interpolator |
@@ -55,8 +55,7 @@ The architecture is targeted at long-range (up to 250 meters) automotive Advance
 | Multi-Target Extraction | Primary & Secondary Peak Engine | Discriminate hard targets from glass or precipitation |
 | Eye-Safety Standard | IEC 60825-1 Class 1 | Hardwired duty-cycle and pulse-width watchdog cutoff |
 | Control Interface | AMBA 3 APB (32-bit data, 8-bit addr) | Zero-wait-state register configuration and telemetry |
-| Die Dimensions | $1400\ \mu m \times 1400\ \mu m$ | Inclusive of standard I/O pad ring and guard ring |
-| Dynamic Power Dissipation | 18.6 mW | Measured at 250 MHz, 0.90V core supply |
+| GDSII Die Dimensions | 360.00 um x 360.00 um | Verified with 0 geometric DRC violations |
 
 ---
 
@@ -64,46 +63,46 @@ The architecture is targeted at long-range (up to 250 meters) automotive Advance
 
 ```
 optical-lidar-dsp-tof/
-â”œâ”€â”€ rtl/
-â”‚   â”œâ”€â”€ bus/
-â”‚   â”‚   â””â”€â”€ lidar_regs_apb.v             # AMBA APB3 control and telemetry slave
-â”‚   â”œâ”€â”€ cfd/
-â”‚   â”‚   â””â”€â”€ constant_fraction_discriminator.v # Digital CFD zero-crossing engine
-â”‚   â”œâ”€â”€ histogram/
-â”‚   â”‚   â””â”€â”€ tof_histogram_engine.v       # 1024-bin histogrammer and multi-peak extractor
-â”‚   â”œâ”€â”€ laser_ctrl/
-â”‚   â”‚   â””â”€â”€ laser_pulse_generator.v      # PRF timer and eye-safety hardware watchdog
-â”‚   â”œâ”€â”€ tdc/
-â”‚   â”‚   â””â”€â”€ time_to_digital_converter.v  # Coarse-fine hybrid 62.5 ps TDC
-â”‚   â””â”€â”€ lidar_dsp_tof_top.v              # Integrated SoC top-level wrapper
-â”œâ”€â”€ tb/
-â”‚   â””â”€â”€ tb_lidar_dsp_tof.v               # Self-checking verification testbench
-â”œâ”€â”€ sim/
-â”‚   â”œâ”€â”€ run_simulation.py                # Automated simulation and assertion runner
-â”‚   â””â”€â”€ waves/
-â”‚       â””â”€â”€ tb_lidar_dsp_tof.vcd         # Signal activity dump for waveform inspection
-â”œâ”€â”€ syn/
-â”‚   â”œâ”€â”€ lidar_timing.sdc                 # Synopsys Design Constraints (250 MHz)
-â”‚   â””â”€â”€ reports/
-â”‚       â”œâ”€â”€ timing_report.txt            # Static timing analysis report (+3.349 ns slack)
-â”‚       â””â”€â”€ area_report.txt              # Hierarchical gate and cell area breakdown
-â”œâ”€â”€ layout/
-â”‚   â”œâ”€â”€ gds/
-â”‚   â”‚   â””â”€â”€ lidar_dsp_tof_top.gds        # Stream GDSII binary layout
-â”‚   â”œâ”€â”€ scripts/
-â”‚   â”‚   â””â”€â”€ build_layout_lidar.py        # Automated GDSII floorplan and routing generator
-â”‚   â””â”€â”€ reports/
-â”œâ”€â”€ .gitignore
-â””â”€â”€ README.md
+|--  rtl/
+|   |--  bus/
+|   |   \--  lidar_regs_apb.v             # AMBA APB3 control and telemetry slave
+|   |--  cfd/
+|   |   \--  constant_fraction_discriminator.v # Digital CFD zero-crossing engine
+|   |--  histogram/
+|   |   \--  tof_histogram_engine.v       # 1024-bin histogrammer and multi-peak extractor
+|   |--  laser_ctrl/
+|   |   \--  laser_pulse_generator.v      # PRF timer and eye-safety hardware watchdog
+|   |--  tdc/
+|   |   \--  time_to_digital_converter.v  # Coarse-fine hybrid 62.5 ps TDC
+|   \--  lidar_dsp_tof_top.v              # Integrated SoC top-level wrapper
+|--  tb/
+|   \--  tb_lidar_dsp_tof.v               # Self-checking verification testbench
+|--  sim/
+|   |--  run_simulation.py                # Automated simulation and assertion runner
+|   \--  waves/
+|       \--  tb_lidar_dsp_tof.vcd         # Signal activity dump for waveform inspection
+|--  syn/
+|   |--  lidar_timing.sdc                 # Synopsys Design Constraints (250 MHz)
+|   \--  reports/
+|       |--  timing_report.txt            # SDC constraint & register audit (external OpenSTA needed for slack)
+|       \--  area_report.txt              # Static RTL structural audit summary
+|--  layout/
+|   |--  gds/
+|   |   \--  lidar_dsp_tof_top.gds        # Stream GDSII binary layout
+|   |--  scripts/
+|   |   \--  build_layout_lidar.py        # Automated GDSII floorplan and routing generator
+|   \--  reports/
+|--  .gitignore
+\--  README.md
 ```
 
 ---
 
 ## Verification Results
 
-The verification environment executes 10 comprehensive assertion-based test suites using Icarus Verilog (`iverilog`) and `vvp`:
+The verification environment executes 10 assertion-based test cases using Icarus Verilog (`iverilog -Wall -g2005`) and `vvp`:
 
-```
+```text
 =====================================================================
    AUTOMOTIVE OPTICAL LIDAR TIME-OF-FLIGHT (TOF) DSP ASIC TESTBENCH  
 =====================================================================
@@ -116,7 +115,7 @@ The verification environment executes 10 comprehensive assertion-based test suit
 [PASS] Test 7: Target Distance calculated correctly: Range = 34500 mm (~34.5 meters).
 [PASS] Test 8: 1024-Bin Histogram accumulated photon events successfully (Target Bin count = 6).
 [PASS] Test 9: Multi-Peak Engine separated Primary Obstacle (30000 mm) and Secondary Echo (6000 mm).
-[PASS] Test 10: APB3 Telemetry Readback verified (Target 1 Range = 30000 mm).
+[PASS] Test 10: APB3 Telemetry Readback verified (Target 1 = 30000 mm, Target 2 = 6000 mm).
 =====================================================================
    TEST SUMMARY: PASSED 10 / 10 TESTS
 =====================================================================
@@ -130,21 +129,45 @@ python sim/run_simulation.py
 
 ---
 
-## Static Timing Analysis (STA) & Synthesis Results
+## RTL Synthesis Readiness & SDC Audit
 
-Synthesized targeting SkyWater 130nm HPC+ low-power standard cell libraries under worst-case commercial conditions (Slow-Slow corner, 0.90V, 125Â°C):
+Static Verilog-2005 structural parsing and SDC constraint audit were executed via `syn/analyze_rtl.py` (external Yosys/OpenROAD/OpenSTA required for post-synthesis gate counts and STA slack):
 
-- **Target Clock Period:** 4.000 ns (250.00 MHz)
-- **Data Arrival Time:** 0.436 ns
-- **Data Required Time:** 3.785 ns
+```text
+================================================================================
+RTL SYNTHESIS READINESS & CONSTRAINT REPORT: optical-lidar-dsp-tof
+Method : Static Verilog/SV Structural Parser + SDC Constraint Audit
+Note   : Foundry Gate-Level Netlist & STA require PDK Liberty (.lib) + Synopsys/OpenROAD
+================================================================================
+RTL Source Files Inspected : 6
+Code Lines (Non-Comment)   : 462
+Sequential Blocks          : 5
+Combinational Blocks       : 1
+Declared reg/logic Signals : 40
+
+MODULE BREAKDOWN:
+  rtl\bus\lidar_regs_apb.v                      | modules=lidar_regs_apb               | loc=  82 | seq= 1 | comb= 0
+  rtl\cfd\constant_fraction_discriminator.v     | modules=constant_fraction_discriminator | loc=  64 | seq= 1 | comb= 1
+  rtl\histogram\tof_histogram_engine.v          | modules=tof_histogram_engine         | loc=  94 | seq= 1 | comb= 0
+  rtl\laser_ctrl\laser_pulse_generator.v        | modules=laser_pulse_generator        | loc=  60 | seq= 1 | comb= 0
+  rtl\lidar_dsp_tof_top.v                       | modules=lidar_dsp_tof_top            | loc= 120 | seq= 0 | comb= 0
+  rtl\tdc\time_to_digital_converter.v           | modules=time_to_digital_converter    | loc=  42 | seq= 1 | comb= 0
+
+SDC CLOCK CONSTRAINTS:
+  lidar_timing.sdc: port=clk | period=4.00 ns | target=250.00 MHz
+
+ARITHMETIC DIVISION/MODULO CHECK: CLEAN (0 combinational / or % operators)
+================================================================================
+```
 
 ---
 
 ## Physical Design Sign-Off (GDSII)
 
-The layout was generated and verified against SkyWater 130nm design rules:
-- **Die Footprint:** $1400\ \mu m \times 1400\ \mu m$ ($1.96\ mm^2$)
-- **Layout File:** `layout/gds/lidar_dsp_tof_top.gds`
+The physical layout was generated and checked against the SkyWater 130nm geometric deck (`layout/scripts/verify_gds_drc.py`):
+- **Die Footprint:** 360.00 um x 360.00 um (0 geometric DRC violations)
+- **Layout Directory:** `layout/gds/`
+- **Note:** External Magic/Netgen and Yosys/OpenSTA required for SPICE LVS and post-layout STA.
 
 ---
 
